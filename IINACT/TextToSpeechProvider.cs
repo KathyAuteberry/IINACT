@@ -59,15 +59,21 @@ internal class TextToSpeechProvider
 
         using var stream = new MemoryStream(mp3Data);
         using var reader = new Mp3FileReader(stream);
+        var tempo = configuration.EnableGoogleTtsPlaybackSpeed
+            ? SpeechTempoSampleProvider.NormalizeTempo(configuration.GoogleTtsPlaybackSpeed)
+            : 1.0f;
         using var waveOut = new WaveOutEvent();
         waveOut.DeviceNumber = configuration.TtsPlaybackDevice;
-        waveOut.Init(reader);
-        var waitHandle = new ManualResetEventSlim(false);
+        if (tempo == 1.0f)
+            waveOut.Init(reader);
+        else
+            waveOut.Init(new SpeechTempoSampleProvider(reader.ToSampleProvider(), tempo).ToWaveProvider16());
+        using var waitHandle = new ManualResetEventSlim(false);
+        waveOut.PlaybackStopped += (s, e) => waitHandle.Set();
         
         lock (speechLock)
         {
             waveOut.Play();
-            waveOut.PlaybackStopped += (s, e) => waitHandle.Set();
             waitHandle.Wait();
         }
     }
