@@ -66,6 +66,10 @@ public class Configuration : IPluginConfiguration
     
     public bool ForceGoogleTts { get; set; }
 
+    public bool EnableGoogleTtsPlaybackSpeed { get; set; }
+
+    public float GoogleTtsPlaybackSpeed { get; set; } = 1.0f;
+
     public int TtsPlaybackDevice { get; set; } = -1;
 
     public void Initialize(IDalamudPluginInterface pluginInterface)

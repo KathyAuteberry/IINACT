@@ -316,6 +316,27 @@ public class MainWindow : Window, IDisposable
         ImGui.TextColored(ImGuiColors.DalamudGrey, "(e.g. ja, en, de, fr, ko)");
         ImGui.Spacing();
 
+        var enablePlaybackSpeed = Plugin.Configuration.EnableGoogleTtsPlaybackSpeed;
+        if (ImGui.Checkbox("Adjust Google TTS playback speed", ref enablePlaybackSpeed))
+        {
+            Plugin.Configuration.EnableGoogleTtsPlaybackSpeed = enablePlaybackSpeed;
+            Plugin.Configuration.Save();
+        }
+
+        if (enablePlaybackSpeed)
+        {
+            var playbackSpeed = SpeechTempoSampleProvider.NormalizeTempo(Plugin.Configuration.GoogleTtsPlaybackSpeed);
+            ImGui.SetNextItemWidth(200 * ImGuiHelpers.GlobalScale);
+            if (ImGui.SliderFloat("Playback Speed", ref playbackSpeed,
+                    SpeechTempoSampleProvider.MinimumTempo, SpeechTempoSampleProvider.MaximumTempo, "%.2fx"))
+            {
+                Plugin.Configuration.GoogleTtsPlaybackSpeed = SpeechTempoSampleProvider.NormalizeTempo(playbackSpeed);
+                Plugin.Configuration.Save();
+            }
+            ImGui.TextColored(ImGuiColors.DalamudGrey, "0.5x slower / 1.0x normal / 2.0x faster (preserves pitch)");
+        }
+        ImGui.Spacing();
+
         var ttsDeviceCount = WaveOut.DeviceCount;
         var currentDevice = Plugin.Configuration.TtsPlaybackDevice;
         var currentDeviceName = currentDevice == -1 ? "Default" : WaveOut.GetCapabilities(currentDevice).ProductName;
